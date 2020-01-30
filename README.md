@@ -4,7 +4,7 @@
 
 ### 注解介绍
 
-######`@JAuth`
+###### `@JAuth`
 这个注解中有两个属性`roles`（角色）和`roleGroup`（角色组）。
 该注解可作用与class、method上，表示当前交易需要用户登陆后，且拥有相应角色时，才能访问。
 eg:  
@@ -21,7 +21,7 @@ public class Demo1Controller {
 上面代码就表示，'/getUser' 这个交易需要用户登陆且拥有admin2角色，才能访问。
 
 
-######`@JAuthRequestMapping` 
+###### `@JAuthRequestMapping` 
 这个注解是`@JAuth`和`@RequestMapping`两个注解的合体，更加简洁。eg：
 ```
 public class Demo2Controller {
