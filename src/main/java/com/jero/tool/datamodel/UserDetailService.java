@@ -3,7 +3,7 @@ package com.jero.tool.datamodel;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * @Description TODO
+ * @Description 获取当前用户服务类
  * @Date 2020-01-28
  * @Author jero
  * @Version 1.0

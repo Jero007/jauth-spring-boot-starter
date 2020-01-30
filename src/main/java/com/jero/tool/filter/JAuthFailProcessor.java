@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * @Description TODO
+ * @Description 鉴权失败后，个性化处理器
  * @Date 2020-01-30
  * @Author jero
  * @Version 1.0
