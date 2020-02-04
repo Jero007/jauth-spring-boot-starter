@@ -35,7 +35,7 @@ public class Demo2Controller {
 ***
 
 ### 使用说明
-本starter中定义了如下接口：用户`JUser`、角色组`JRoleGroup`、用户获取服务`UserDetailService`.  
+本starter中定义了如下接口：用户`JUser`、角色组`JRoleGroup`(可继承抽象类`AbstractJRoleGroup`)、用户获取服务`UserDetailService`.  
 开发者需要自己去实现上述接口，并将`JRoleGroup`和`UserDetailService`注册到Spring中。eg:  
 ```
 @Configuration

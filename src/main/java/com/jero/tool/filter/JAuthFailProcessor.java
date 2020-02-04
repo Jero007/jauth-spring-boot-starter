@@ -24,7 +24,7 @@ public interface JAuthFailProcessor {
      * @param handler
      * @return
      */
-    boolean proceNoLogin(HttpServletRequest request, HttpServletResponse response, HandlerMethod handler);
+    void proceNoLogin(HttpServletRequest request, HttpServletResponse response, HandlerMethod handler);
 
     /**
      * 处理用户权限不足情况
@@ -33,5 +33,5 @@ public interface JAuthFailProcessor {
      * @param handler
      * @return
      */
-    boolean proceNoPermission(HttpServletRequest request, HttpServletResponse response, HandlerMethod handler);
+    void proceNoPermission(HttpServletRequest request, HttpServletResponse response, HandlerMethod handler);
 }

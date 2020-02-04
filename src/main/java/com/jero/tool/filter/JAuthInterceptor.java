@@ -46,14 +46,13 @@ public class JAuthInterceptor extends HandlerInterceptorAdapter implements Appli
     @Autowired(required = false)
     private JAuthFailProcessor jAuthFailProcessor;
     private final Object lock = new Object();
-    private boolean used = false;
+    private volatile boolean used = false;
     private Map<HandlerMethod, Set<String>> roleMapping = new HashMap<>();
-    private ThreadLocal<Map<HandlerMethod, Set<String>>> localRoleMapping = new ThreadLocal<>();
+    private ThreadLocal<Map<HandlerMethod, Set<String>>> localRoleMapping = ThreadLocal.withInitial(HashMap::new);
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        //log.info("JAuthInterceptor.preHandle=====>" + request.getRequestURI());
         if (!(handler instanceof HandlerMethod)) {
             //没有对应的方法映射，忽略...
             return true;
@@ -80,7 +79,7 @@ public class JAuthInterceptor extends HandlerInterceptorAdapter implements Appli
             synchronized (lock) {
                 this.used = true;
                 this.roleMapping.putAll(this.localRoleMapping.get());
-                this.localRoleMapping.get().clear();
+                this.localRoleMapping.remove();
                 this.used = false;
             }
         }
@@ -94,6 +93,7 @@ public class JAuthInterceptor extends HandlerInterceptorAdapter implements Appli
             return true;
         }
         Object user = this.userDetailService.getUserDetail(request);
+        //用户未登陆
         if (null == user) {
             log.warn("this transaction[{}] should be login.",request.getRequestURI());
             if (this.jAuthFailProcessor == null) {
@@ -104,21 +104,34 @@ public class JAuthInterceptor extends HandlerInterceptorAdapter implements Appli
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                return false;
             } else {
-                return this.jAuthFailProcessor.proceNoLogin(request, response, handlerMethod);
+                this.jAuthFailProcessor.proceNoLogin(request, response, handlerMethod);
             }
+            return false;
         }
         if (allowRoles.size() == 1 && DEFAULT_ROLE.equals(allowRoles.iterator().next())) {
             return true;
         } else {
             JUser juser = (JUser) user;
-            JRoleGroup userRoleGroup = (JRoleGroup)this.applicationContext.getBean(juser.getRoleGroupName());
-            for (String role: allowRoles) {
-                if (userRoleGroup.contain(role)) {
-                    return true;
+            //判断角色组
+            if (null != juser.getRoleGroupName() && !"".equals(juser.getRoleGroupName())) {
+                JRoleGroup userRoleGroup = (JRoleGroup)this.applicationContext.getBean(juser.getRoleGroupName());
+                for (String role: allowRoles) {
+                    if (userRoleGroup.contain(role)) {
+                        return true;
+                    }
                 }
             }
+            //判断角色集合
+            if (null != juser.getRoles() && juser.getRoles().size() > 0) {
+                for (String role: allowRoles) {
+                    if (juser.getRoles().contains(role)) {
+                        return true;
+                    }
+                }
+            }
+
+            //用户权限不足
             log.warn("user[{}] has no permission to this transaction[{}]",juser.getId(),request.getRequestURI());
             if (this.jAuthFailProcessor == null) {
                 //默认返回json
@@ -131,10 +144,10 @@ public class JAuthInterceptor extends HandlerInterceptorAdapter implements Appli
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                return false;
             } else {
-                return this.jAuthFailProcessor.proceNoPermission(request, response, handlerMethod);
+                this.jAuthFailProcessor.proceNoPermission(request, response, handlerMethod);
             }
+            return false;
 
         }
     }
